@@ -1,7 +1,7 @@
 #### Some SQL practice interview questions which I attempted
 
-## [Data Lemur 🐒](https://datalemur.com/)
-### Level: Easy
+# [Data Lemur 🐒](https://datalemur.com/)
+## 🟢 Level: Easy
 #### ✔️ Data Science Skills | LinkedIn <br>
 Given a table of candidates and their skills, find the candidates best suited for an open Data Science job. Write a query to list the candidates who are proficient in Python, Tableau, and PostgreSQL. Sort the the output by candidate ID in ascending order.
 ```sql
@@ -50,7 +50,7 @@ ORDER BY mth, product
 ```
 ![image](https://user-images.githubusercontent.com/40571742/203690884-3ae429a6-8beb-412e-ac89-ac22ff968d54.png)
 
-#### ✔️ Cities With Completed Trades | Robinhood
+#### ✔️ Cities With Completed Trades | Robinhood <br>
 Given the tables containing information on Robinhood trades and users. Write a query to list the top three cities that have the most completed trade orders in descending order.
 ```sql
 SELECT city, 
@@ -62,3 +62,44 @@ ORDER BY total_orders DESC
 LIMIT 3
 ```
 ![image](https://user-images.githubusercontent.com/40571742/203691191-772fb685-d561-4228-9d86-8377e544e13d.png)
+
+## 🟡 Level: Medium
+#### ✔️ User's Third Transaction | Uber <br>
+Given the table below on Uber transactions made by users. Write a query to obtain the third transaction of every user. Output the user id, spend and transaction date.
+```sql
+WITH table1 AS(
+  SELECT *, ROW_NUMBER() OVER(PARTITION BY user_id ORDER BY transaction_date)
+  FROM transactions
+)
+
+SELECT user_id, spend, transaction_date
+FROM table1
+WHERE row_number=3
+```
+![image](https://user-images.githubusercontent.com/40571742/204428703-b6f4de60-d281-4e22-81aa-89f060a66fb0.png)
+
+#### ✔️ Sending vs. Opening Snaps | Snapchat <br>
+Given the tables containing information on Snapchat users, their ages, and their time spent sending and opening snaps. Write a query to obtain a breakdown of the time spent sending vs. opening snaps (as a percentage of total time spent on these activities) for each age group.
+
+Output the age bucket and percentage of sending and opening snaps. Round the percentage to 2 decimal places.
+```sql
+WITH open AS(
+  SELECT age_bucket, SUM(time_spent) AS open_time
+  FROM activities act JOIN age_breakdown
+  ON act.user_id = age_breakdown.user_id
+  WHERE activity_type = 'open'
+  GROUP BY age_bucket),
+send AS(
+  SELECT age_bucket, SUM(time_spent) AS send_time
+  FROM activities act JOIN age_breakdown
+  ON act.user_id = age_breakdown.user_id
+  WHERE activity_type = 'send'
+  GROUP BY age_bucket)
+
+SELECT open.age_bucket, 
+  ROUND((open_time/(send_time+open_time))*100.0,2) AS open_perc, 
+  ROUND((send_time/(send_time+open_time))*100.0,2) AS send_perc
+FROM open JOIN send
+ON open.age_bucket = send.age_bucket
+```
+![image](https://user-images.githubusercontent.com/40571742/204484638-6a16dca5-e4f0-49df-a3a4-1c40c482c78d.png)
