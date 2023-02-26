@@ -103,3 +103,44 @@ FROM open JOIN send
 ON open.age_bucket = send.age_bucket
 ```
 ![image](https://user-images.githubusercontent.com/40571742/204484638-6a16dca5-e4f0-49df-a3a4-1c40c482c78d.png)
+
+#### ✔️ Fill Missing Client Data | Accenture <br>
+When you log in to your retailer client's database, you notice that their product catalog data is full of gaps in the category column. Can you write a SQL query that returns the product catalog with the missing data filled in?
+```sql
+with grouped_table as (
+  select product_id, category, name, count(category) OVER(order by product_id) as _grp
+  from products
+), final_table as (
+  select product_id, category, name, first_value(category) OVER(partition by _grp order by product_id) as new_category
+  from grouped_table
+)
+
+select product_id, new_category as category, name
+from final_table
+```
+![image](https://user-images.githubusercontent.com/40571742/221336210-4f47b37e-c8cd-4d67-9840-fb4604e0475f.png)
+
+#### ✔️ Odd and Even Measurements | Google <br>
+Assume you are given the table containing measurement values obtained from a Google sensor over several days. Measurements are taken several times within a given day.
+Write a query to obtain the sum of the odd-numbered and even-numbered measurements on a particular day, in two different columns. Refer to the Example Output below for the output format.
+```sql
+SELECT 
+  measurement_day,
+  SUM(
+    case when row_number%2!=0
+    then measurement_value else 0 end) as odd_sum,
+  SUM(
+    case when row_number%2=0
+    then measurement_value else 0 end) as even_sum
+FROM (
+  SELECT date(measurement_time) as measurement_day,
+  measurement_value,
+  row_number() over(
+    partition by CAST(measurement_time as date)
+    order by measurement_time)
+  FROM measurements
+) as t1
+GROUP BY measurement_day
+ORDER BY measurement_day
+```
+![image](https://user-images.githubusercontent.com/40571742/221399686-0bdb2b79-1088-4d3e-bcd5-4559fca40fb0.png)
